@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Amazon.Runtime.Internal.Util;
+using System;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using TinyURL.Core.Interfaces;
@@ -9,17 +11,25 @@ namespace TinyURL.Services
     public class UrlShorteningService : IUrlShorteningService
     {
         private readonly IUrlEntryRepository _urlEntryRepository;
+        private readonly ICustomMemoryCache<UrlEntry> _cache;
 
-        public UrlShorteningService(IUrlEntryRepository urlEntryRepository)
+        public UrlShorteningService(IUrlEntryRepository urlEntryRepository, ICustomMemoryCache<UrlEntry> cache)
         {
             _urlEntryRepository = urlEntryRepository;
+            _cache = cache;
+
         }
 
         public async Task<UrlEntry> ShortenUrlAsync(string originalUrl)
         {
-            var shortUrl = await GenerateShortUrl();
-            var urlEntry = new UrlEntry { OriginalUrl = originalUrl, ShortUrl = shortUrl };
-
+            UrlEntry urlEntry = null;
+            if(!_cache.TryGetValue(originalUrl, out urlEntry))
+            {
+                var shortUrl = await GenerateShortUrl();
+                urlEntry.OriginalUrl = originalUrl;
+                urlEntry.ShortUrl = shortUrl;
+                _cache.Add(originalUrl, urlEntry);
+            }
             await _urlEntryRepository.AddUrlAsync(urlEntry);
             return urlEntry;
         }

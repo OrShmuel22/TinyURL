@@ -3,11 +3,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using System;
 using TinyURL.Core.Interfaces;
 using TinyURL.Core.Models;
 using TinyURL.Data.Context;
 using TinyURL.Data.Repositories;
 using TinyURL.Services;
+using TinyURL.Services.Caching;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,13 @@ builder.Services.AddSingleton<MongoDbContext>(sp =>
     var settings = sp.GetRequiredService<IOptions<MongoDBSettings>>().Value;
     var logger = sp.GetRequiredService<ILogger<MongoDbContext>>();
     return new MongoDbContext(settings, logger);
+});
+
+// Register CustomMemoryCache<T> with a specified capacity (e.g., 100)
+builder.Services.AddSingleton<ICustomMemoryCache<UrlEntry>>(sp =>
+{
+    int cacheCapacity = 100; //cache capacity
+    return new CustomMemoryCache<UrlEntry>(cacheCapacity);
 });
 
 // Repository registrations
