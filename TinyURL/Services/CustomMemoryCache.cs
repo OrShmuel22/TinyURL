@@ -4,14 +4,18 @@ using TinyURL.Core.Models;
 
 namespace TinyURL.Services.Caching
 {
+    /// <summary>
+    /// Custom memory cache with LRU (Least Recently Used) eviction policy.
+    /// </summary>
+    /// <typeparam name="T">The type of the values in the cache.</typeparam>
     public class CustomMemoryCache<T> : ICustomMemoryCache<T>
     {
         private class Node
         {
-            public string Key { get; set; } = default!;
-            public T Value { get; set; } = default!;
-            public Node? Previous { get; set; } = null;
-            public Node? Next { get; set; } = null;
+            public string Key { get; set; }
+            public T Value { get; set; }
+            public Node? Previous { get; set; }
+            public Node? Next { get; set; }
         }
 
         private readonly int _capacity;
@@ -24,7 +28,6 @@ namespace TinyURL.Services.Caching
         {
             _capacity = settings.Capacity > 0 ? settings.Capacity : throw new ArgumentException("Capacity must be greater than zero.", nameof(settings.Capacity));
             _cacheMap = new ConcurrentDictionary<string, Node>();
-
             _head = new Node();
             _tail = new Node();
             _head.Next = _tail;
@@ -33,8 +36,7 @@ namespace TinyURL.Services.Caching
 
         public void Add(string key, T value)
         {
-            if (string.IsNullOrEmpty(key))
-                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+            ValidateKey(key);
 
             lock (_lock)
             {
@@ -43,11 +45,7 @@ namespace TinyURL.Services.Caching
                     node = new Node { Key = key, Value = value };
                     _cacheMap[key] = node;
                     AddToHead(node);
-
-                    if (_cacheMap.Count > _capacity)
-                    {
-                        RemoveLRUItem();
-                    }
+                    if (_cacheMap.Count > _capacity) RemoveLRUItem();
                 }
             }
         }
@@ -64,15 +62,11 @@ namespace TinyURL.Services.Caching
 
         public void Remove(string key)
         {
-            if (string.IsNullOrEmpty(key))
-                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+            ValidateKey(key);
 
             lock (_lock)
             {
-                if (_cacheMap.TryRemove(key, out Node node))
-                {
-                    RemoveNode(node);
-                }
+                if (_cacheMap.TryRemove(key, out Node node)) RemoveNode(node);
             }
         }
 
@@ -117,5 +111,11 @@ namespace TinyURL.Services.Caching
             RemoveNode(lru);
             _cacheMap.TryRemove(lru.Key, out _);
         }
+
+        private void ValidateKey(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+        }
     }
-}   
+}
