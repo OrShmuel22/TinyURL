@@ -1,6 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Xml.Serialization;
 using TinyURL.Core.Interfaces;
 using TinyURL.Core.Models;
 using TinyURL.Data.Context;

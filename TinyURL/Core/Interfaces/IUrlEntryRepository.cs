@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using TinyURL.Core.Models;
+﻿using TinyURL.Core.Models;
 
 namespace TinyURL.Core.Interfaces
 {

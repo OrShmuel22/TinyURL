@@ -1,5 +1,4 @@
 ﻿using TinyURL.Core.Models;
-using System.Threading.Tasks;
 
 namespace TinyURL.Core.Interfaces
 {

@@ -9,10 +9,7 @@ namespace TinyURL.Data.Context
     {
         private readonly IMongoDatabase _database;
         private readonly ILogger<MongoDbContext> _logger;
-        /// <summary>
-        /// Base number for unique IDs (close to 62^6 for 7-char base-62 IDs).
-        /// </summary>
-        private const long BaseNumber = 56800235584; 
+
         public MongoDbContext(MongoDBSettings settings, ILogger<MongoDbContext> logger)
         {
             _logger = logger;

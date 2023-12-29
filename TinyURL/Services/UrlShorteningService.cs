@@ -1,10 +1,4 @@
-﻿using Amazon.Runtime.Internal.Util;
-using Microsoft.Extensions.Options;
-using System;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
-using TinyURL.Core.Interfaces;
+﻿using TinyURL.Core.Interfaces;
 using TinyURL.Core.Models;
 
 namespace TinyURL.Services
