@@ -18,20 +18,28 @@ var builder = WebApplication.CreateBuilder(args);
 // Configuration for MongoDB
 builder.Services.Configure<MongoDBSettings>(
     builder.Configuration.GetSection("MongoDBSettings"));
+builder.Services.Configure<MemoryCacheSetting>(
+    builder.Configuration.GetSection("MemoryCacheSetting"));
+
+// Retrieve UrlShorteningSettings
+var urlShorteningSettings = builder.Configuration.GetSection("UrlShorteningSettings").Get<UrlShorteningSettings>();
 
 builder.Services.AddSingleton<MongoDbContext>(sp =>
 {
-    var settings = sp.GetRequiredService<IOptions<MongoDBSettings>>().Value;
+    var mongoSettings = sp.GetRequiredService<IOptions<MongoDBSettings>>().Value;
     var logger = sp.GetRequiredService<ILogger<MongoDbContext>>();
-    return new MongoDbContext(settings, logger);
+    return new MongoDbContext(mongoSettings, logger);
 });
 
 // Register CustomMemoryCache<T> with a specified capacity (e.g., 100)
 builder.Services.AddSingleton<ICustomMemoryCache<string>>(sp =>
 {
-    int cacheCapacity = 100; //cache capacity
-    return new CustomMemoryCache<string>(cacheCapacity);
+    var cacheSettings = sp.GetRequiredService<IOptions<MemoryCacheSetting>>().Value;
+
+    return new CustomMemoryCache<string>(cacheSettings);
 });
+
+
 
 builder.Services.AddSingleton<IBase62Encoding, Base62>();
 
@@ -39,7 +47,12 @@ builder.Services.AddSingleton<IBase62Encoding, Base62>();
 builder.Services.AddScoped<IUrlEntryRepository, UrlEntryRepository>();
 
 // Service registrations
-builder.Services.AddScoped<IUrlShorteningService, UrlShorteningService>();
+// Register UrlShorteningService with the settings
+builder.Services.AddScoped<IUrlShorteningService>(serviceProvider =>
+    new UrlShorteningService(urlShorteningSettings,
+                             serviceProvider.GetRequiredService<IUrlEntryRepository>(),
+                             serviceProvider.GetRequiredService<ICustomMemoryCache<string>>(),
+                             serviceProvider.GetRequiredService<IBase62Encoding>()));
 
 // Add controllers
 builder.Services.AddControllers();

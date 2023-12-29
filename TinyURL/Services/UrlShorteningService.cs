@@ -1,4 +1,5 @@
 ﻿using Amazon.Runtime.Internal.Util;
+using Microsoft.Extensions.Options;
 using System;
 using System.Net.Http.Headers;
 using System.Text;
@@ -13,14 +14,27 @@ namespace TinyURL.Services
         private readonly IUrlEntryRepository _urlEntryRepository;
         private readonly IBase62Encoding _base62;
         private readonly ICustomMemoryCache<string> _cache;
-        private const long BaseNumber = 56800235584;
-        private const string BaseUrl = "https://localhost:7123/url/";
+        private readonly UrlShorteningSettings _settings;
 
-        public UrlShorteningService(IUrlEntryRepository urlEntryRepository, ICustomMemoryCache<string> cache, IBase62Encoding base62)
+
+        public UrlShorteningService(UrlShorteningSettings settings,
+                                    IUrlEntryRepository urlEntryRepository,
+                                    ICustomMemoryCache<string> cache,
+                                    IBase62Encoding base62)
         {
+            _settings = settings;
             _urlEntryRepository = urlEntryRepository;
             _cache = cache;
             _base62 = base62;
+        }
+
+
+
+
+        private bool IsValidUrl(string url)
+        {
+            // You can extend this method to include more sophisticated checks if needed
+            return Uri.IsWellFormedUriString(url, UriKind.Absolute);
         }
 
         /// <summary>
@@ -28,11 +42,12 @@ namespace TinyURL.Services
         /// </summary>
         /// <param name="originalUrl">The original URL to be shortened.</param>
         /// <returns>A task that represents the asynchronous operation, returning the urlMapping object for the shortened URL.</returns>
+
         public async Task<urlMapping> ShortenUrlAsync(string originalUrl)
         {
-            if (string.IsNullOrWhiteSpace(originalUrl))
+            if (string.IsNullOrWhiteSpace(originalUrl) || !IsValidUrl(originalUrl))
             {
-                throw new ArgumentException("Original URL cannot be null or whitespace.", nameof(originalUrl));
+                throw new ArgumentException("Original URL is not valid.", nameof(originalUrl));
             }
 
             urlMapping urlEntry = null;
@@ -55,7 +70,7 @@ namespace TinyURL.Services
                 else
                 {
                     // Not found in the cache and not in the database generate new one
-                    string shortUrl = BaseUrl + await GenerateShortUrl(); // Prefix BaseUrl to the generated short URL
+                    string shortUrl = _settings.BaseUrl + await GenerateShortUrl(); // Prefix BaseUrl to the generated short URL
                     urlEntry = new urlMapping
                     {
                         OriginalUrl = originalUrl,
@@ -82,7 +97,7 @@ namespace TinyURL.Services
 
         public async Task<string> ExpandUrlAsync(string shortUrl)
         {
-            shortUrl = BaseUrl + shortUrl;
+            shortUrl = _settings.BaseUrl + shortUrl;
             if (string.IsNullOrWhiteSpace(shortUrl))
             {
                 throw new ArgumentException("Short URL cannot be null or whitespace.", nameof(shortUrl));
@@ -123,10 +138,19 @@ namespace TinyURL.Services
 
         private async Task<string> GenerateShortUrl()
         {
-            long urlId = await _urlEntryRepository.GetNextIdAsync();
-            string shortUrl = _base62.Encode(urlId + BaseNumber);
-            return shortUrl;
+            try
+            {
+                long urlId = await _urlEntryRepository.GetNextIdAsync();
+                return _base62.Encode(urlId + _settings.BaseNumber.Value);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception details here
+                // You can also decide to throw a custom exception or handle it based on your application's needs
+                throw new InvalidOperationException("An error occurred while generating the short URL.", ex);
+            }
         }
+
 
 
     }

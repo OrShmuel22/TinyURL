@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using TinyURL.Core.Interfaces;
+using TinyURL.Core.Models;
 
 namespace TinyURL.Services.Caching
 {
@@ -21,9 +22,9 @@ namespace TinyURL.Services.Caching
         private readonly Node _tail;
         private readonly object _lock = new object();
 
-        public CustomMemoryCache(int capacity)
+        public CustomMemoryCache(MemoryCacheSetting settings)
         {
-            _capacity = capacity > 0 ? capacity : throw new ArgumentException("Capacity must be greater than zero.", nameof(capacity));
+            _capacity = settings.Capacity > 0 ? settings.Capacity : throw new ArgumentException("Capacity must be greater than zero.", nameof(settings.Capacity));
             _cacheMap = new ConcurrentDictionary<string, Node>();
 
             _head = new Node();
