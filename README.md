@@ -1,5 +1,4 @@
-﻿
-# TinyURL Backend Service
+﻿# TinyURL Backend Service
 
 ## Overview
 
@@ -48,8 +47,6 @@ This project is designed for demonstration purposes. For production deployment, 
 
 ---
 
-*End of README*
-
 ## Custom Memory Cache
 
 ### Functionality
@@ -59,4 +56,3 @@ The cache in the TinyURL Backend Service is designed to store recently accessed 
 1. **LRU (Least Recently Used) Strategy**: Implements an eviction policy where the least recently used items are removed first upon reaching full capacity.
 2. **Concurrent Access**: Utilizes `ConcurrentDictionary` for thread-safe operations, suitable for a multi-threaded environment.
 3. **Doubly Linked List**: Maintains the order of items based on usage, facilitating efficient additions and deletions.
-
