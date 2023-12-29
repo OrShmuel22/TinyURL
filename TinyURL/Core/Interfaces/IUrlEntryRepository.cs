@@ -6,13 +6,13 @@ namespace TinyURL.Core.Interfaces
 {
     public interface IUrlEntryRepository
     {
-        Task<IEnumerable<UrlEntry>> GetAllUrlsAsync();
-        Task<UrlEntry> GetUrlByShortUrlAsync(string shortUrl);
-        Task<UrlEntry> GetUrlByOriginalUrlAsync(string originalUrl);
-        Task<long> GetNextSequenceValueAsync();
+        Task<IEnumerable<urlMapping>> GetAllUrlsAsync();
+        Task<urlMapping> GetUrlByShortUrlAsync(string shortUrl);
+        Task<urlMapping> GetUrlByOriginalUrlAsync(string originalUrl);
+        Task<long> GetNextIdAsync();
 
-        Task AddUrlAsync(UrlEntry urlEntry);
-        Task UpdateUrlAsync(string id, UrlEntry urlEntry);
+        Task AddUrlAsync(urlMapping urlEntry);
+        Task UpdateUrlAsync(string id, urlMapping urlEntry);
         Task DeleteUrlAsync(string id);
     }
 }

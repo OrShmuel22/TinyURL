@@ -39,5 +39,24 @@ namespace TinyURL.Controllers
 
             return Ok(originalUrl);
         }
+
+        // New action method for redirecting short URLs to original URLs
+        [HttpGet("{code}")]
+        public async Task<IActionResult> RedirectShortUrl(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return NotFound("Short URL code is invalid.");
+            }
+
+            string originalUrl = await _urlShorteningService.ExpandUrlAsync(code);
+
+            if (originalUrl == null)
+            {
+                return NotFound("URL not found.");
+            }
+
+            return Redirect(originalUrl);
+        }
     }
 }

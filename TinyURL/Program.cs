@@ -27,11 +27,13 @@ builder.Services.AddSingleton<MongoDbContext>(sp =>
 });
 
 // Register CustomMemoryCache<T> with a specified capacity (e.g., 100)
-builder.Services.AddSingleton<ICustomMemoryCache<UrlEntry>>(sp =>
+builder.Services.AddSingleton<ICustomMemoryCache<string>>(sp =>
 {
     int cacheCapacity = 100; //cache capacity
-    return new CustomMemoryCache<UrlEntry>(cacheCapacity);
+    return new CustomMemoryCache<string>(cacheCapacity);
 });
+
+builder.Services.AddSingleton<IBase62Encoding, Base62>();
 
 // Repository registrations
 builder.Services.AddScoped<IUrlEntryRepository, UrlEntryRepository>();

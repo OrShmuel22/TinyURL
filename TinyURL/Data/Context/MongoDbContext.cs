@@ -9,8 +9,10 @@ namespace TinyURL.Data.Context
     {
         private readonly IMongoDatabase _database;
         private readonly ILogger<MongoDbContext> _logger;
-        public IMongoCollection<BsonDocument> UrlSequence { get; private set; }
-
+        /// <summary>
+        /// Base number for unique IDs (close to 62^6 for 7-char base-62 IDs).
+        /// </summary>
+        private const long BaseNumber = 56800235584; 
         public MongoDbContext(MongoDBSettings settings, ILogger<MongoDbContext> logger)
         {
             _logger = logger;
@@ -18,7 +20,6 @@ namespace TinyURL.Data.Context
             {
                 var client = new MongoClient(settings.ConnectionString);
                 _database = client.GetDatabase(settings.DatabaseName);
-                UrlSequence = client.GetDatabase(settings.DatabaseName).GetCollection<BsonDocument>(settings.UrlSequenceCollection);
 
             }
             catch (Exception ex)
@@ -28,6 +29,8 @@ namespace TinyURL.Data.Context
             }
         }
 
-        public IMongoCollection<UrlEntry> UrlEntries => _database.GetCollection<UrlEntry>("UrlEntries");
+        public IMongoCollection<urlMapping> urlMapping => _database.GetCollection<urlMapping>("urlMappings");
+        public IMongoCollection<BsonDocument> Counters => _database.GetCollection<BsonDocument>("counters");
+
     }
 }

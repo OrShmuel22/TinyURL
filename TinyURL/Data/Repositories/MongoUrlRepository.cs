@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Xml.Serialization;
 using TinyURL.Core.Interfaces;
 using TinyURL.Core.Models;
 using TinyURL.Data.Context;
@@ -9,21 +10,19 @@ namespace TinyURL.Data.Repositories
 {
     public class UrlEntryRepository : IUrlEntryRepository
     {
-        private readonly IMongoCollection<UrlEntry> _urls;
+        private readonly IMongoCollection<urlMapping> _urls;
         private readonly ILogger<UrlEntryRepository> _logger;
-        private readonly IMongoCollection<BsonDocument> _sequence;
-        private const long InitialValue = 10000000;
-        private const long MaxValue = 99999999;
-        private const string SequenceId = "url_sequence_id";
+        private readonly IMongoCollection<BsonDocument> _counters;
+        private const string CounterId = "urlId";
 
         public UrlEntryRepository(MongoDbContext dbContext, ILogger<UrlEntryRepository> logger)
         {
-            _urls = dbContext.UrlEntries;
-            _sequence = dbContext.UrlSequence;
+            _urls = dbContext.urlMapping;
+            _counters = dbContext.Counters;
             _logger = logger;
         }
 
-        public async Task<IEnumerable<UrlEntry>> GetAllUrlsAsync()
+        public async Task<IEnumerable<urlMapping>> GetAllUrlsAsync()
         {
             try
             {
@@ -36,7 +35,7 @@ namespace TinyURL.Data.Repositories
             }
         }
 
-        public async Task<UrlEntry> GetUrlByShortUrlAsync(string shortUrl)
+        public async Task<urlMapping> GetUrlByShortUrlAsync(string shortUrl)
         {
             try
             {
@@ -49,7 +48,7 @@ namespace TinyURL.Data.Repositories
             }
         }
 
-        public async Task AddUrlAsync(UrlEntry urlEntry)
+        public async Task AddUrlAsync(urlMapping urlEntry)
         {
             try
             {
@@ -62,7 +61,7 @@ namespace TinyURL.Data.Repositories
             }
         }
 
-        public async Task UpdateUrlAsync(string id, UrlEntry urlEntry)
+        public async Task UpdateUrlAsync(string id, urlMapping urlEntry)
         {
             try
             {
@@ -75,12 +74,13 @@ namespace TinyURL.Data.Repositories
             }
         }
 
-        public async Task<UrlEntry> GetUrlByOriginalUrlAsync(string originalUrl)
+        public async Task<urlMapping> GetUrlByOriginalUrlAsync(string originalUrl)
         {
             try
             {
-                // Query the database for a UrlEntry with the specified originalUrl
-                return await _urls.Find(url => url.OriginalUrl == originalUrl).FirstOrDefaultAsync();
+                // Asynchronously search for the UrlEntry with the specified originalUrl
+                var urlMappingResult = await _urls.Find(url => url.OriginalUrl == originalUrl).FirstOrDefaultAsync();
+                return urlMappingResult;
             }
             catch (Exception ex)
             {
@@ -101,57 +101,27 @@ namespace TinyURL.Data.Repositories
                 throw;
             }
         }
-        public async Task<long> GetNextSequenceValueAsync()
+
+        public async Task<long> GetNextIdAsync()
         {
             try
             {
-                var filter = Builders<BsonDocument>.Filter.Eq("_id", SequenceId);
-
-                // Attempt to increment the sequence value
+                var filter = Builders<BsonDocument>.Filter.Eq("_id", CounterId);
                 var update = Builders<BsonDocument>.Update.Inc("sequence_value", 1);
                 var options = new FindOneAndUpdateOptions<BsonDocument, BsonDocument>
                 {
-                    ReturnDocument = ReturnDocument.After
+                    ReturnDocument = ReturnDocument.After,
+                    IsUpsert = true
                 };
 
-                var updatedDocument = await _sequence.FindOneAndUpdateAsync(filter, update, options);
-
-                // If the document doesn't exist, create it
-                if (updatedDocument == null)
-                {
-                    var initialDoc = new BsonDocument
-            {
-                { "_id", SequenceId },
-                { "sequence_value", InitialValue }
-            };
-                    await _sequence.InsertOneAsync(initialDoc);
-                    return InitialValue;
-                }
-
-                long sequenceValue = updatedDocument["sequence_value"].AsInt64;
-
-                // Check if the sequence value has reached its upper limit
-                if (sequenceValue > MaxValue)
-                {
-                    await ResetSequenceAsync();
-                    return InitialValue;
-                }
-
-                return sequenceValue;
+                var result = await _counters.FindOneAndUpdateAsync(filter, update, options);
+                return result["sequence_value"].AsInt32;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred while incrementing the sequence value: {ex}");
+                _logger.LogError($"An error occurred while fetching the next ID: {ex.Message}");
                 throw;
             }
         }
-
-        private async Task ResetSequenceAsync()
-        {
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", SequenceId);
-            var resetUpdate = Builders<BsonDocument>.Update.Set("sequence_value", InitialValue);
-            await _sequence.UpdateOneAsync(filter, resetUpdate);
-        }
-
     }
 }
