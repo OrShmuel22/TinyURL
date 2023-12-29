@@ -42,10 +42,6 @@ The TinyURL Backend Service is a URL shortening application developed in C#. Thi
 2. **Expand a URL**: Send a GET request to `/url/expand/{shortUrl}` with the short URL code.
 3. **Redirect Short URL**: Access a short URL directly to get redirected to the original URL.
 
-## Note
-
-This project is designed for demonstration purposes. For production deployment, consider adding security features, logging, error handling improvements, and load testing.
-
 ---
 
 *End of README*
