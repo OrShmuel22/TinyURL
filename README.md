@@ -56,3 +56,23 @@ The cache in the TinyURL Backend Service is designed to store recently accessed 
 2. **Concurrent Access**: Utilizes `ConcurrentDictionary` for thread-safe operations, suitable for a multi-threaded environment.
 3. **Doubly Linked List**: Maintains the order of items based on usage, facilitating efficient additions and deletions.
 
+## Cache Size-Limitation Approach
+
+In the design of the custom memory cache for the TinyURL Backend Service, I implemented a size-limitation approach based on fixed capacity. This decision aimed to balance memory efficiency with performance.
+
+### Approach:
+- **Fixed Capacity**: The cache has a predefined maximum capacity, limiting the number of items it can hold.
+
+### Why This Approach:
+1. **Memory Efficiency**: Limits memory usage, important in resource-constrained environments.
+2. **Simplicity and Predictability**: Straightforward and predictable in terms of memory usage.
+
+### Advantages:
+1. **Prevents Memory Bloat**: Avoids memory leaks or bloat in an unbounded cache.
+2. **Fast Lookup**: Ensures quick access for frequently accessed data.
+
+### Disadvantages:
+1. **Potential for Cache Misses**: If the cache is too small, it might lead to increased cache misses.
+2. **Static Allocation**: Doesn't allow dynamic resizing based on workload, which could be inefficient or insufficient depending on the situation.
+
+This approach was chosen for its balance between performance and resource usage, with the key being to size the cache appropriately based on expected workload and system resources.
