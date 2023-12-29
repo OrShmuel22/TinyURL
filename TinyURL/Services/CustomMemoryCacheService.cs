@@ -8,7 +8,7 @@ namespace TinyURL.Services.Caching
     /// Custom memory cache with LRU (Least Recently Used) eviction policy.
     /// </summary>
     /// <typeparam name="T">The type of the values in the cache.</typeparam>
-    public class CustomMemoryCache<T> : ICustomMemoryCache<T>
+    public class CustomMemoryCacheService<T> : ICustomMemoryCache<T>
     {
         private class Node
         {
@@ -24,7 +24,7 @@ namespace TinyURL.Services.Caching
         private readonly Node _tail;
         private readonly object _lock = new object();
 
-        public CustomMemoryCache(MemoryCacheSetting settings)
+        public CustomMemoryCacheService(MemoryCacheSetting settings)
         {
             _capacity = settings.Capacity > 0 ? settings.Capacity : throw new ArgumentException("Capacity must be greater than zero.", nameof(settings.Capacity));
             _cacheMap = new ConcurrentDictionary<string, Node>();

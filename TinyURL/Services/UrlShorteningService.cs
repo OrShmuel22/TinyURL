@@ -27,7 +27,7 @@ namespace TinyURL.Services
         /// </summary>
         /// <param name="originalUrl">The original URL to be shortened.</param>
         /// <returns>The shortened URL mapping.</returns>
-        public async Task<urlMapping> ShortenUrlAsync(string originalUrl)
+        public async Task<UrlMapping> ShortenUrlAsync(string originalUrl)
         {
             if (string.IsNullOrWhiteSpace(originalUrl) || !IsValidUrl(originalUrl))
                 throw new ArgumentException("Original URL is not valid.", nameof(originalUrl));
@@ -35,11 +35,11 @@ namespace TinyURL.Services
             string cachedShortUrl;
             if (!_cache.TryGetValue(originalUrl, out cachedShortUrl))
             {
-                urlMapping urlEntry = await _urlEntryRepository.GetUrlByOriginalUrlAsync(originalUrl);
+                UrlMapping urlEntry = await _urlEntryRepository.GetUrlByOriginalUrlAsync(originalUrl);
                 if (urlEntry == null)
                 {
                     string shortUrl = _settings.BaseUrl + await GenerateShortUrl();
-                    urlEntry = new urlMapping { OriginalUrl = originalUrl, ShortUrl = shortUrl };
+                    urlEntry = new UrlMapping { OriginalUrl = originalUrl, ShortUrl = shortUrl };
                     await _urlEntryRepository.AddUrlAsync(urlEntry);
                     CacheUrls(originalUrl, shortUrl);
                 }
@@ -47,7 +47,7 @@ namespace TinyURL.Services
                     CacheUrls(originalUrl, urlEntry.ShortUrl);
                 return urlEntry;
             }
-            return new urlMapping { OriginalUrl = originalUrl, ShortUrl = cachedShortUrl };
+            return new UrlMapping { OriginalUrl = originalUrl, ShortUrl = cachedShortUrl };
         }
 
         /// <summary>

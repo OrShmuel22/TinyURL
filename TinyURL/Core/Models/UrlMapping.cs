@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace TinyURL.Core.Models
 {
-    public class urlMapping
+    public class UrlMapping
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

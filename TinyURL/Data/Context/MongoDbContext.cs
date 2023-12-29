@@ -26,7 +26,7 @@ namespace TinyURL.Data.Context
             }
         }
 
-        public IMongoCollection<urlMapping> urlMapping => _database.GetCollection<urlMapping>("urlMappings");
+        public IMongoCollection<UrlMapping> urlMapping => _database.GetCollection<UrlMapping>("urlMappings");
         public IMongoCollection<BsonDocument> Counters => _database.GetCollection<BsonDocument>("counters");
 
     }

@@ -7,21 +7,21 @@ using TinyURL.Data.Context;
 
 namespace TinyURL.Data.Repositories
 {
-    public class UrlEntryRepository : IUrlEntryRepository
+    public class MongoUrlRepository : IUrlEntryRepository
     {
-        private readonly IMongoCollection<urlMapping> _urls;
-        private readonly ILogger<UrlEntryRepository> _logger;
+        private readonly IMongoCollection<UrlMapping> _urls;
+        private readonly ILogger<MongoUrlRepository> _logger;
         private readonly IMongoCollection<BsonDocument> _counters;
         private const string CounterId = "urlId";
 
-        public UrlEntryRepository(MongoDbContext dbContext, ILogger<UrlEntryRepository> logger)
+        public MongoUrlRepository(MongoDbContext dbContext, ILogger<MongoUrlRepository> logger)
         {
             _urls = dbContext.urlMapping;
             _counters = dbContext.Counters;
             _logger = logger;
         }
 
-        public async Task<IEnumerable<urlMapping>> GetAllUrlsAsync()
+        public async Task<IEnumerable<UrlMapping>> GetAllUrlsAsync()
         {
             try
             {
@@ -34,7 +34,7 @@ namespace TinyURL.Data.Repositories
             }
         }
 
-        public async Task<urlMapping> GetUrlByShortUrlAsync(string shortUrl)
+        public async Task<UrlMapping> GetUrlByShortUrlAsync(string shortUrl)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace TinyURL.Data.Repositories
             }
         }
 
-        public async Task AddUrlAsync(urlMapping urlEntry)
+        public async Task AddUrlAsync(UrlMapping urlEntry)
         {
             try
             {
@@ -60,7 +60,7 @@ namespace TinyURL.Data.Repositories
             }
         }
 
-        public async Task UpdateUrlAsync(string id, urlMapping urlEntry)
+        public async Task UpdateUrlAsync(string id, UrlMapping urlEntry)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace TinyURL.Data.Repositories
             }
         }
 
-        public async Task<urlMapping> GetUrlByOriginalUrlAsync(string originalUrl)
+        public async Task<UrlMapping> GetUrlByOriginalUrlAsync(string originalUrl)
         {
             try
             {

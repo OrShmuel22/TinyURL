@@ -2,7 +2,7 @@
 
 namespace TinyURL.Services
 {
-    public class Base62 : IBase62Encoding
+    public class Base62Service : IBase62Encoding
     {
         private static readonly string Base62Chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 

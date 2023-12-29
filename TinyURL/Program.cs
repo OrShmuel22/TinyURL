@@ -36,15 +36,15 @@ builder.Services.AddSingleton<ICustomMemoryCache<string>>(sp =>
 {
     var cacheSettings = sp.GetRequiredService<IOptions<MemoryCacheSetting>>().Value;
 
-    return new CustomMemoryCache<string>(cacheSettings);
+    return new CustomMemoryCacheService<string>(cacheSettings);
 });
 
 
 
-builder.Services.AddSingleton<IBase62Encoding, Base62>();
+builder.Services.AddSingleton<IBase62Encoding, Base62Service>();
 
 // Repository registrations
-builder.Services.AddScoped<IUrlEntryRepository, UrlEntryRepository>();
+builder.Services.AddScoped<IUrlEntryRepository, MongoUrlRepository>();
 
 // Service registrations
 // Register UrlShorteningService with the settings

@@ -4,7 +4,7 @@ namespace TinyURL.Core.Interfaces
 {
     public interface IUrlShorteningService
     {
-        Task<urlMapping> ShortenUrlAsync(string originalUrl);
+        Task<UrlMapping> ShortenUrlAsync(string originalUrl);
         Task<string> ExpandUrlAsync(string shortUrl);
     }
 }
